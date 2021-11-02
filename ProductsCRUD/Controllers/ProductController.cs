@@ -31,7 +31,7 @@ namespace ProductsCRUD.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProductReadDTO>>> GetAllProduct()
+        public async Task<ActionResult<IEnumerable<ProductReadDTO>>> GetAllProducts()
         {
             var productsDomainModels = await _productsRepository.GetAllProductsAsync();
 
@@ -45,6 +45,7 @@ namespace ProductsCRUD.Controllers
         /// <param name="ID">Represents the product ID and is used to get a specific product.</param>
         /// <returns></returns>
         [HttpGet("{ID}")]
+        [ActionName(nameof(GetProduct))]
         public async Task<ActionResult<ProductReadDTO>> GetProduct(int ID)
         {
             var productDomainModel = await _productsRepository.GetProductAsync(ID);
@@ -62,7 +63,7 @@ namespace ProductsCRUD.Controllers
         /// <param name="orderCreateDTO">The properties supplied to create a product from the POSTing API.</param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult> CreateOrder([FromBody] ProductCreateDTO orderCreateDTO)
+        public async Task<ActionResult> CreateProduct([FromBody] ProductCreateDTO orderCreateDTO)
         {
             var productModel = _mapper.Map<ProductDomainModel>(orderCreateDTO);
 
@@ -70,7 +71,7 @@ namespace ProductsCRUD.Controllers
 
             await _productsRepository.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetProduct), new { ID = newProductID });
+            return CreatedAtAction(nameof(GetProduct), new { ID = newProductID }, productModel);
         }
 
         /// <summary>
@@ -97,7 +98,7 @@ namespace ProductsCRUD.Controllers
             _productsRepository.UpdateProduct(productModel);
             await _productsRepository.SaveChangesAsync();
 
-            return NoContent();
+            return Ok();
         }
 
     }
