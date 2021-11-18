@@ -6,26 +6,55 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ProductsCRUD.Repositories.Interface;
+using ProductsCRUD.Repositories.Concrete;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace ProductsCRUD
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private readonly IWebHostEnvironment _environment;
+        public IConfiguration Configuration { get; }
+
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
             Configuration = configuration;
+            _environment = environment;
         }
-
-        public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddDbContext<Context.Context>(options => options.UseSqlServer
+            (Configuration.GetConnectionString("ProductsConnectionString")));
+
+            services.AddControllers().AddNewtonsoftJson(j =>
+            {
+                j.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            });
+
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+            /*if(_environment.IsDevelopment())
+            {
+            }
+            else
+            {
+            }*/
+
+            services.AddSingleton<IProductsRepository, FakeProductsRepository>();
+
+            services.AddMvc(options =>
+            {
+                options.SuppressAsyncSuffixInActionNames = false;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
