@@ -32,7 +32,7 @@ namespace ProductsCRUD.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Authorize]
+        [Authorize(Policy = "ReadAccess")]
         public async Task<ActionResult<IEnumerable<ProductReadDTO>>> GetAllProducts()
         {
             var productsDomainModels = await _productsRepository.GetAllProductsAsync();

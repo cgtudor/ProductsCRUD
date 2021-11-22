@@ -19,6 +19,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Reflection;
 using System.IO;
+using ProductsCRUD.OpenApiSecurity;
 
 namespace ProductsCRUD
 {
@@ -52,8 +53,20 @@ namespace ProductsCRUD
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(options =>
             {
-                options.Authority = Configuration["Auth0:Domain"];
+                options.Authority = $"https://{Configuration["Auth0:Domain"]}/";
                 options.Audience = Configuration["Auth0:Audience"];
+            });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("ReadAccess", policy =>
+                                  policy.RequireClaim("permissions", "read:product"));
+                options.AddPolicy("CreateAccess", policy =>
+                                  policy.RequireClaim("permissions", "add:product"));
+                options.AddPolicy("UpdateAccess", policy =>
+                                  policy.RequireClaim("permissions", "edit:product"));
+                options.AddPolicy("DeleteAccess", policy =>
+                                  policy.RequireClaim("permissions", "delete:product"));
             });
 
             /*if(_environment.IsDevelopment())
@@ -77,23 +90,19 @@ namespace ProductsCRUD
                 var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 
-                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                string securityDefinitionName = Configuration["SwaggerUISecurityMode"] ?? "Bearer";
+                OpenApiSecurityScheme securityScheme = new OpenApiBearerSecurityScheme();
+                OpenApiSecurityRequirement securityRequirement = new OpenApiBearerSecurityRequirement(securityScheme);
+
+                if (securityDefinitionName.ToLower() == "oauth2")
                 {
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.OAuth2,
-                    Flows = new OpenApiOAuthFlows
-                    {
-                        Implicit = new OpenApiOAuthFlow
-                        {
-                            Scopes = new Dictionary<string, string>
-                            {
-                                { "openid", "Open Id" }
-                            },
-                            AuthorizationUrl = new Uri(Configuration["Auth0:Domain"] + "authorize?audience=" + Configuration["Auth0:Audience"])
-                        }
-                    }
-                });
+                    securityScheme = new OpenApiOAuthSecurityScheme(Configuration["Auth0:Domain"], Configuration["Auth0:Audience"]);
+                    securityRequirement = new OpenApiOAuthSecurityRequirement();
+                }
+
+                options.AddSecurityDefinition(securityDefinitionName, securityScheme);
+
+                options.AddSecurityRequirement(securityRequirement);
             });
 
             services.AddMvc(options =>
@@ -111,10 +120,18 @@ namespace ProductsCRUD
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(options =>
+                app.UseSwaggerUI(c =>
                 {
-                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "API");
-                    options.OAuthClientId(Configuration["Auth0:ClientId"]);
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Glossary v1");
+
+                    if (Configuration["SwaggerUISecurityMode"]?.ToLower() == "oauth2")
+                    {
+                        c.OAuthClientId(Configuration["Auth0:ClientId"]);
+                        c.OAuthClientSecret(Configuration["Auth0:ClientSecret"]);
+                        c.OAuthAppName("GlossaryClient");
+                        c.OAuthAdditionalQueryStringParams(new Dictionary<string, string> { { "audience", Configuration["Auth0:Audience"] } });
+                        c.OAuthUsePkce();
+                    }
                 });
             }
 
