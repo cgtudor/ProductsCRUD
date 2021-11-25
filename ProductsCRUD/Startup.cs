@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Reflection;
 using System.IO;
 using ProductsCRUD.OpenApiSecurity;
+using Microsoft.IdentityModel.Logging;
 
 namespace ProductsCRUD
 {
@@ -37,6 +38,8 @@ namespace ProductsCRUD
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            IdentityModelEventSource.ShowPII = true;
+
             services.AddDbContext<Context.Context>(options => options.UseSqlServer
             (Configuration.GetConnectionString("ProductsConnectionString")));
 
