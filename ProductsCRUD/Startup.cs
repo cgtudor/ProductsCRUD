@@ -69,6 +69,7 @@ namespace ProductsCRUD
                                   policy.RequireClaim("permissions", "delete:product"));
             });
 
+            //Using the fake repository while in development
             if(_environment.IsDevelopment())
             {
                 services.AddSingleton<IProductsRepository, FakeProductsRepository>();
