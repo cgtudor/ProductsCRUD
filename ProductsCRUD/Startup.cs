@@ -67,18 +67,6 @@ namespace ProductsCRUD
                 options.Audience = Configuration["Auth0:Audience"];
             });
 
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("ReadAccess", policy =>
-                                  policy.RequireClaim("permissions", "read:product"));
-                options.AddPolicy("CreateAccess", policy =>
-                                  policy.RequireClaim("permissions", "add:product"));
-                options.AddPolicy("UpdateAccess", policy =>
-                                  policy.RequireClaim("permissions", "edit:product"));
-                options.AddPolicy("DeleteAccess", policy =>
-                                  policy.RequireClaim("permissions", "delete:product"));
-            });
-
             //Using the fake repository while in development
             if(_environment.IsDevelopment())
             {
