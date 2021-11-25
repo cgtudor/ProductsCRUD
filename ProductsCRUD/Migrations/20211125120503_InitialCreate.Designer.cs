@@ -8,7 +8,7 @@ using ProductsCRUD.Context;
 
 namespace ProductsCRUD.Migrations
 {
-    [DbContext(typeof(Context))]
+    [DbContext(typeof(Context.Context))]
     [Migration("20211125120503_InitialCreate")]
     partial class InitialCreate
     {

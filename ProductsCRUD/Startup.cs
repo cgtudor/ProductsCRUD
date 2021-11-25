@@ -69,14 +69,14 @@ namespace ProductsCRUD
                                   policy.RequireClaim("permissions", "delete:product"));
             });
 
-            /*if(_environment.IsDevelopment())
+            if(_environment.IsDevelopment())
             {
+                services.AddSingleton<IProductsRepository, FakeProductsRepository>();
             }
             else
             {
-            }*/
-
-            services.AddSingleton<IProductsRepository, FakeProductsRepository>();
+                services.AddSingleton<IProductsRepository, SqlProductsRepository>();
+            }
 
             services.AddSwaggerGen(options =>
             {

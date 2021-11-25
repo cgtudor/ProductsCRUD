@@ -2,15 +2,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProductsCRUD.Context;
 
 namespace ProductsCRUD.Migrations
 {
     [DbContext(typeof(Context.Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20211125123017_SecondSeeding")]
+    partial class SecondSeeding
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
