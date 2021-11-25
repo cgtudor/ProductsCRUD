@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -31,6 +32,7 @@ namespace ProductsCRUD.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
+        [Authorize(Policy = "ReadAccess")]
         public async Task<ActionResult<IEnumerable<ProductReadDTO>>> GetAllProducts()
         {
             var productsDomainModels = await _productsRepository.GetAllProductsAsync();
@@ -45,6 +47,7 @@ namespace ProductsCRUD.Controllers
         /// <param name="ID">Represents the product ID and is used to get a specific product.</param>
         /// <returns></returns>
         [HttpGet("{ID}")]
+        [Authorize]
         [ActionName(nameof(GetProduct))]
         public async Task<ActionResult<ProductReadDTO>> GetProduct(int ID)
         {
@@ -63,6 +66,7 @@ namespace ProductsCRUD.Controllers
         /// <param name="orderCreateDTO">The properties supplied to create a product from the POSTing API.</param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult> CreateProduct([FromBody] ProductCreateDTO orderCreateDTO)
         {
             var productModel = _mapper.Map<ProductDomainModel>(orderCreateDTO);
@@ -76,11 +80,13 @@ namespace ProductsCRUD.Controllers
 
         /// <summary>
         /// This function will update a product with the passed in parameters.
-        /// /api/products/{id}
         /// </summary>
         /// <param name="ID">The ID of the product that will be updated.</param>
         /// <returns></returns>
+        /// <response code="200">Patching of the product was successful</response>
+        /// <response code="401">Unauthorized access.</response>
         [HttpPatch("{ID}")]
+        [Authorize]
         public async Task<ActionResult> UpdateOrder(int ID, JsonPatchDocument<ProductEditDTO> productEditPatch)
         {
             var productModel = await _productsRepository.GetProductAsync(ID);

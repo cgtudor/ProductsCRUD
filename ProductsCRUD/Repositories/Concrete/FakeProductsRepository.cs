@@ -11,7 +11,7 @@ namespace ProductsCRUD.Repositories.Concrete
     {
         public List<ProductDomainModel> _products = new List<ProductDomainModel>
         {
-            new ProductDomainModel {ProductID = 0, ProductName = "Chocolate", ProductDescription = "Tasty and savory.", ProductPrice = 1.56, ProductQuantity = 4},
+            new ProductDomainModel {ProductID = 0, ProductName = "TestProduct", ProductDescription = "Tasty and savory.", ProductPrice = 1.56, ProductQuantity = 4},
             new ProductDomainModel {ProductID = 1, ProductName = "Heineken 0.5L", ProductDescription = "Blonde beer. Yummy.", ProductPrice = 2.56, ProductQuantity = 45},
             new ProductDomainModel {ProductID = 2, ProductName = "Bread", ProductDescription = "Fresh.", ProductPrice = 0.56, ProductQuantity = 1243},
             new ProductDomainModel {ProductID = 3, ProductName = "Nails", ProductDescription = "Pack of 50 nails.", ProductPrice = 4.5, ProductQuantity = 23},
