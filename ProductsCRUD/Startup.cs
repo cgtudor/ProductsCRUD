@@ -40,8 +40,15 @@ namespace ProductsCRUD
         {
             IdentityModelEventSource.ShowPII = true;
 
-            services.AddDbContext<Context.Context>(options => options.UseSqlServer
-            (Configuration.GetConnectionString("ProductsConnectionString")));
+            if(_environment.IsDevelopment())
+            {
+                services.AddDbContext<Context.Context>(options => options.UseSqlServer
+                    ("local"));
+            } else
+            {
+                services.AddDbContext<Context.Context>(options => options.UseSqlServer
+                    (Configuration.GetConnectionString("ProductsConnectionString")));
+            }
 
             services.AddControllers().AddNewtonsoftJson(j =>
             {
@@ -118,7 +125,7 @@ namespace ProductsCRUD
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DbContext dataContext)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, Context.Context dataContext)
         {
             if (env.IsDevelopment())
             {
