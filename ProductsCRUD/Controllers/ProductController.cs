@@ -118,16 +118,23 @@ namespace ProductsCRUD.Controllers
         [ActionName(nameof(GetProduct))]
         public async Task<ActionResult<ProductReadDTO>> DeleteProduct(int ID)
         {
-            var productDomainModel = await _productsRepository.GetProductAsync(ID);
+            try
+            {
+                var productDomainModel = await _productsRepository.GetProductAsync(ID);
 
-            if (productDomainModel == null)
-                return NotFound($"Product with ID = {ID} not found.");
+                if (productDomainModel == null)
+                    return NotFound($"Product with ID = {ID} not found.");
 
-            var deletedProduct = _productsRepository.DeleteProductAsync(ID);
+                await _productsRepository.DeleteProductAsync(ID);
 
-            await _productsRepository.SaveChangesAsync();
+                await _productsRepository.SaveChangesAsync();
 
-            return Ok(deletedProduct);
+                return NoContent();
+            } catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    e.Message);
+            }
         }
 
 
