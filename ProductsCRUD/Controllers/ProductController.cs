@@ -35,9 +35,14 @@ namespace ProductsCRUD.Controllers
         [Authorize(Policy = "ReadAccess")]
         public async Task<ActionResult<IEnumerable<ProductReadDTO>>> GetAllProducts()
         {
-            var productsDomainModels = await _productsRepository.GetAllProductsAsync();
-
-            return Ok(_mapper.Map<IEnumerable<ProductReadDTO>>(productsDomainModels));
+            try
+            {
+                var productsDomainModels = await _productsRepository.GetAllProductsAsync();
+                return Ok(_mapper.Map<IEnumerable<ProductReadDTO>>(productsDomainModels));
+            } catch (Exception)
+            {
+                return StatusCode(500);
+            }            
         }
 
         /// <summary>
