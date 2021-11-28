@@ -107,5 +107,29 @@ namespace ProductsCRUD.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// DELETE individual product.
+        /// /api/products/{id}
+        /// </summary>
+        /// <param name="ID">Represents the product ID and is used to delete a specific product.</param>
+        /// <returns></returns>
+        [HttpDelete("{ID}")]
+        [Authorize]
+        [ActionName(nameof(GetProduct))]
+        public async Task<ActionResult<ProductReadDTO>> DeleteProduct(int ID)
+        {
+            var productDomainModel = await _productsRepository.GetProductAsync(ID);
+
+            if (productDomainModel == null)
+                return NotFound($"Product with ID = {ID} not found.");
+
+            var deletedProduct = _productsRepository.DeleteProductAsync(ID);
+
+            await _productsRepository.SaveChangesAsync();
+
+            return Ok(deletedProduct);
+        }
+
+
     }
 }
