@@ -32,7 +32,7 @@ namespace ProductsCRUD.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Authorize]
+        [Authorize("ReadProducts")]
         public async Task<ActionResult<IEnumerable<ProductReadDTO>>> GetAllProducts()
         {
             var productsDomainModels = await _productsRepository.GetAllProductsAsync();
@@ -47,7 +47,7 @@ namespace ProductsCRUD.Controllers
         /// <param name="ID">Represents the product ID and is used to get a specific product.</param>
         /// <returns></returns>
         [HttpGet("{ID}")]
-        [Authorize]
+        [Authorize("ReadProduct")]
         [ActionName(nameof(GetProduct))]
         public async Task<ActionResult<ProductReadDTO>> GetProduct(int ID)
         {
@@ -66,7 +66,7 @@ namespace ProductsCRUD.Controllers
         /// <param name="orderCreateDTO">The properties supplied to create a product from the POSTing API.</param>
         /// <returns></returns>
         [HttpPost]
-        [Authorize]
+        [Authorize("CreateProduct")]
         public async Task<ActionResult> CreateProduct([FromBody] ProductCreateDTO orderCreateDTO)
         {
             var productModel = _mapper.Map<ProductDomainModel>(orderCreateDTO);
@@ -86,8 +86,8 @@ namespace ProductsCRUD.Controllers
         /// <response code="200">Patching of the product was successful</response>
         /// <response code="401">Unauthorized access.</response>
         [HttpPatch("{ID}")]
-        [Authorize]
-        public async Task<ActionResult> UpdateOrder(int ID, JsonPatchDocument<ProductEditDTO> productEditPatch)
+        [Authorize("UpdateProduct")]
+        public async Task<ActionResult> UpdateProduct(int ID, JsonPatchDocument<ProductEditDTO> productEditPatch)
         {
             var productModel = await _productsRepository.GetProductAsync(ID);
             if (productModel == null)
@@ -114,7 +114,7 @@ namespace ProductsCRUD.Controllers
         /// <param name="ID">Represents the product ID and is used to delete a specific product.</param>
         /// <returns></returns>
         [HttpDelete("{ID}")]
-        [Authorize]
+        [Authorize("DeleteProduct")]
         [ActionName(nameof(GetProduct))]
         public async Task<ActionResult<ProductReadDTO>> DeleteProduct(int ID)
         {
