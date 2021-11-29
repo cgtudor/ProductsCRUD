@@ -104,6 +104,16 @@ namespace ProductsCRUD
                 options.AddSecurityRequirement(securityRequirement);
             });
 
+            services.AddAuthorization(o =>
+            {
+                o.AddPolicy("CreateProduct", policy =>
+                    policy.RequireClaim("permissions", "add:product"));
+                o.AddPolicy("UpdateProduct", policy =>
+                    policy.RequireClaim("permissions", "edit:product"));
+                o.AddPolicy("DeleteProduct", policy =>
+                    policy.RequireClaim("permissions", "delete:product"));
+            });
+
             services.AddMvc(options =>
             {
                 options.SuppressAsyncSuffixInActionNames = false;
