@@ -47,7 +47,11 @@ namespace ProductsCRUD
             } else
             {
                 services.AddDbContext<Context.Context>(options => options.UseSqlServer
-                    (Configuration.GetConnectionString("ProductsConnectionString")));
+                    (Configuration.GetConnectionString("ProductsConnectionString"),
+                    sqlServerOptionsAction: sqlOptions => sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(2),
+                    errorNumbersToAdd: null)));
             }
 
             services.AddControllers().AddNewtonsoftJson(j =>
