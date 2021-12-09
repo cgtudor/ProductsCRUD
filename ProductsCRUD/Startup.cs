@@ -21,6 +21,9 @@ using System.Reflection;
 using System.IO;
 using ProductsCRUD.OpenApiSecurity;
 using Microsoft.IdentityModel.Logging;
+using ProductsCRUD.AutomatedCacher.Interface;
+using ProductsCRUD.AutomatedCacher.Concrete;
+using ProductsCRUD.AutomatedCacher.Model;
 
 namespace ProductsCRUD
 {
@@ -123,11 +126,12 @@ namespace ProductsCRUD
                 options.SuppressAsyncSuffixInActionNames = false;
             });
 
-            
+            services.AddSingleton<IMemoryCacheAutomater, MemoryCacheAutomater>();
+            services.Configure<MemoryCacheModel>(Configuration.GetSection("MemoryCache"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, Context.Context dataContext)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IMemoryCacheAutomater memoryCacheAutomater, Context.Context dataContext)
         {
             if (env.IsDevelopment())
             {
@@ -163,6 +167,8 @@ namespace ProductsCRUD
             {
                 endpoints.MapControllers();
             });
+
+            memoryCacheAutomater.AutomateCache();
         }
     }
 }

@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+using ProductsCRUD.AutomatedCacher.Model;
 using ProductsCRUD.DomainModels;
 using ProductsCRUD.DTOs;
 using ProductsCRUD.Repositories.Interface;
@@ -19,11 +22,16 @@ namespace ProductsCRUD.Controllers
     {
         private IProductsRepository _productsRepository;
         private IMapper _mapper;
+        private readonly IMemoryCache _memoryCache;
+        private readonly MemoryCacheModel _memoryCacheModel;
 
-        public ProductController(IProductsRepository productsRepository, IMapper mapper)
+        public ProductController(IProductsRepository productsRepository, IMapper mapper, IMemoryCache memoryCache,
+            IOptions<MemoryCacheModel> memoryCacheModel)
         {
             _productsRepository = productsRepository;
             _mapper = mapper;
+            _memoryCache = memoryCache;
+            _memoryCacheModel = memoryCacheModel.Value;
         }
 
         /// <summary>
@@ -34,8 +42,10 @@ namespace ProductsCRUD.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductReadDTO>>> GetAllProducts()
         {
-            var productsDomainModels = await _productsRepository.GetAllProductsAsync();
+            if (_memoryCache.TryGetValue(_memoryCacheModel.Products, out List<ProductDomainModel> productValues))
+                return Ok(_mapper.Map<IEnumerable<ProductReadDTO>>(productValues));
 
+            var productsDomainModels = await _productsRepository.GetAllProductsAsync();
             return Ok(_mapper.Map<IEnumerable<ProductReadDTO>>(productsDomainModels));
         }
 
@@ -49,10 +59,30 @@ namespace ProductsCRUD.Controllers
         [ActionName(nameof(GetProduct))]
         public async Task<ActionResult<ProductReadDTO>> GetProduct(int ID)
         {
-            var productDomainModel = await _productsRepository.GetProductAsync(ID);
+            ProductDomainModel productDomainModel;
+            //If cache exists and we find the entity.
+            if (_memoryCache.TryGetValue(_memoryCacheModel.Products, out List<ProductDomainModel> productValues))
+            {
+                //Return the entity if we find it in the cache.
+                productDomainModel = productValues.Find(o => o.ProductID == ID);
+                if (productDomainModel != null)
+                    return Ok(_mapper.Map<ProductReadDTO>(productDomainModel));
 
-            if (productDomainModel != null)
-                return Ok(_mapper.Map<ProductReadDTO>(productDomainModel));
+                //Otherwise, get the entity from the DB, add it to the cache and return it.
+                productDomainModel = await _productsRepository.GetProductAsync(ID);
+                if (productDomainModel != null)
+                {
+                    productValues.Add(productDomainModel);
+                    return Ok(_mapper.Map<ProductReadDTO>(productDomainModel));
+                }
+
+                throw new ResourceNotFoundException("A resource for ID: " + ID + " does not exist.");
+            }
+
+            var dbProductDomainModel = await _productsRepository.GetProductAsync(ID);
+
+            if (dbProductDomainModel != null)
+                return Ok(_mapper.Map<ProductReadDTO>(dbProductDomainModel));
 
             return NotFound();
         }
@@ -72,6 +102,9 @@ namespace ProductsCRUD.Controllers
             int newProductID = _productsRepository.CreateProduct(productModel);
 
             await _productsRepository.SaveChangesAsync();
+
+            if (_memoryCache.TryGetValue(_memoryCacheModel.Products, out List<ProductDomainModel> productValues))
+                productValues.Add(productModel);
 
             return CreatedAtAction(nameof(GetProduct), new { ID = newProductID }, productModel);
         }
@@ -102,6 +135,13 @@ namespace ProductsCRUD.Controllers
             _productsRepository.UpdateProduct(productModel);
             await _productsRepository.SaveChangesAsync();
 
+            //Update cache with newly updated orders.
+            if (_memoryCache.TryGetValue(_memoryCacheModel.Products, out List<ProductDomainModel> productValues))
+            {
+                productValues.RemoveAll(o => o.ProductID == productModel.ProductID);
+                productValues.Add(productModel);
+            }
+
             return Ok();
         }
 
@@ -126,6 +166,12 @@ namespace ProductsCRUD.Controllers
                 await _productsRepository.DeleteProductAsync(ID);
 
                 await _productsRepository.SaveChangesAsync();
+
+                //Update cache with newly updated orders.
+                if (_memoryCache.TryGetValue(_memoryCacheModel.Products, out List<ProductDomainModel> productValues))
+                {
+                    productValues.RemoveAll(o => o.ProductID == productDomainModel.ProductID);
+                }
 
                 return NoContent();
             } catch (Exception e)
