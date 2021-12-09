@@ -24,6 +24,7 @@ using Microsoft.IdentityModel.Logging;
 using ProductsCRUD.AutomatedCacher.Interface;
 using ProductsCRUD.AutomatedCacher.Concrete;
 using ProductsCRUD.AutomatedCacher.Model;
+using ProductsCRUD.CustomExceptionHandler;
 
 namespace ProductsCRUD
 {
@@ -152,6 +153,7 @@ namespace ProductsCRUD
                 });
             } else
             {
+                app.UseMiddleware<ExceptionMiddleware>();
                 dataContext.Database.Migrate();
             }
 
