@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using ProductsCRUD.AutomatedCacher.Interface;
@@ -19,9 +20,9 @@ namespace ProductsCRUD.AutomatedCacher.Concrete
         private readonly IMemoryCache _memoryCache;
         private readonly MemoryCacheModel _memoryCacheModel;
 
-        public MemoryCacheAutomater(IProductsRepository ordersRepository, IMemoryCache memoryCache, IOptions<MemoryCacheModel> memoryCacheModel)
+        public MemoryCacheAutomater(IServiceScopeFactory serviceProvider, IMemoryCache memoryCache, IOptions<MemoryCacheModel> memoryCacheModel)
         {
-            _productsRepository = ordersRepository;
+            _productsRepository = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<IProductsRepository>();
             _memoryCache = memoryCache;
             _memoryCacheModel = memoryCacheModel.Value;
         }

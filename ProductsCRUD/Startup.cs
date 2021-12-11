@@ -82,7 +82,7 @@ namespace ProductsCRUD
             }
             else
             {
-                services.AddSingleton<IProductsRepository, SqlProductsRepository>();
+                services.AddScoped<IProductsRepository, SqlProductsRepository>();
             }
 
             services.AddSwaggerGen(options =>
