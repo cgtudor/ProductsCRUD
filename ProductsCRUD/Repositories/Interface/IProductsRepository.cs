@@ -12,6 +12,7 @@ namespace ProductsCRUD.Repositories.Interface
         public Task<ProductDomainModel> GetProductAsync(int ID);
         public int CreateProduct(ProductDomainModel productDomainModel);
         public void UpdateProduct(ProductDomainModel productDomainModel);
+        public Task<ProductDomainModel> DeleteProductAsync(int ID);
         public Task SaveChangesAsync();
     }
 }

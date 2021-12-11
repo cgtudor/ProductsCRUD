@@ -47,5 +47,14 @@ namespace ProductsCRUD.Repositories.Concrete
             _products.Remove(oldProductDomainModel);
             _products.Add(productDomainModel);
         }
+
+        public Task<ProductDomainModel> DeleteProductAsync(int ID)
+        {
+            var productDomainModel = _products.FirstOrDefault(o => o.ProductID == ID);
+            if (productDomainModel == null)
+                return null;
+            _products.Remove(productDomainModel);
+            return Task.FromResult(productDomainModel);
+        }
     }
 }

@@ -20,6 +20,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Reflection;
 using System.IO;
 using ProductsCRUD.OpenApiSecurity;
+using Microsoft.IdentityModel.Logging;
+using ProductsCRUD.AutomatedCacher.Interface;
+using ProductsCRUD.AutomatedCacher.Concrete;
+using ProductsCRUD.AutomatedCacher.Model;
+using ProductsCRUD.CustomExceptionHandler;
 
 namespace ProductsCRUD
 {
@@ -37,8 +42,21 @@ namespace ProductsCRUD
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<Context.Context>(options => options.UseSqlServer
-            (Configuration.GetConnectionString("ProductsConnectionString")));
+            IdentityModelEventSource.ShowPII = true;
+
+            if(_environment.IsDevelopment())
+            {
+                services.AddDbContext<Context.Context>(options => options.UseSqlServer
+                    ("local"));
+            } else
+            {
+                services.AddDbContext<Context.Context>(options => options.UseSqlServer
+                    (Configuration.GetConnectionString("ProductsConnectionString"),
+                    sqlServerOptionsAction: sqlOptions => sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(2),
+                    errorNumbersToAdd: null)));
+            }
 
             services.AddControllers().AddNewtonsoftJson(j =>
             {
@@ -57,25 +75,14 @@ namespace ProductsCRUD
                 options.Audience = Configuration["Auth0:Audience"];
             });
 
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("ReadAccess", policy =>
-                                  policy.RequireClaim("permissions", "read:product"));
-                options.AddPolicy("CreateAccess", policy =>
-                                  policy.RequireClaim("permissions", "add:product"));
-                options.AddPolicy("UpdateAccess", policy =>
-                                  policy.RequireClaim("permissions", "edit:product"));
-                options.AddPolicy("DeleteAccess", policy =>
-                                  policy.RequireClaim("permissions", "delete:product"));
-            });
-
+            //Using the fake repository while in development
             if(_environment.IsDevelopment())
             {
                 services.AddSingleton<IProductsRepository, FakeProductsRepository>();
             }
             else
             {
-                services.AddSingleton<IProductsRepository, SqlProductsRepository>();
+                services.AddScoped<IProductsRepository, SqlProductsRepository>();
             }
 
             services.AddSwaggerGen(options =>
@@ -105,16 +112,27 @@ namespace ProductsCRUD
                 options.AddSecurityRequirement(securityRequirement);
             });
 
+            services.AddAuthorization(o =>
+            {
+                o.AddPolicy("CreateProduct", policy =>
+                    policy.RequireClaim("permissions", "add:product"));
+                o.AddPolicy("UpdateProduct", policy =>
+                    policy.RequireClaim("permissions", "edit:product"));
+                o.AddPolicy("DeleteProduct", policy =>
+                    policy.RequireClaim("permissions", "delete:product"));
+            });
+
             services.AddMvc(options =>
             {
                 options.SuppressAsyncSuffixInActionNames = false;
             });
 
-            
+            services.AddSingleton<IMemoryCacheAutomater, MemoryCacheAutomater>();
+            services.Configure<MemoryCacheModel>(Configuration.GetSection("MemoryCache"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IMemoryCacheAutomater memoryCacheAutomater, Context.Context dataContext)
         {
             if (env.IsDevelopment())
             {
@@ -133,6 +151,10 @@ namespace ProductsCRUD
                         c.OAuthUsePkce();
                     }
                 });
+            } else
+            {
+                app.UseMiddleware<ExceptionMiddleware>();
+                dataContext.Database.Migrate();
             }
 
             app.UseHttpsRedirection();
@@ -147,6 +169,8 @@ namespace ProductsCRUD
             {
                 endpoints.MapControllers();
             });
+
+            memoryCacheAutomater.AutomateCache();
         }
     }
 }

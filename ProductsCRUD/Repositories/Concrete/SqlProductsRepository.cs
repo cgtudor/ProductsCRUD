@@ -41,5 +41,18 @@ namespace ProductsCRUD.Repositories.Concrete
         {
             
         }
+
+        public async Task<ProductDomainModel> DeleteProductAsync(int ID)
+        {
+            var productDomainModel = await _context._products
+                .FirstOrDefaultAsync(o => o.ProductID == ID);
+            if (productDomainModel != null)
+            {
+                _context._products.Remove(productDomainModel);
+                return productDomainModel;
+            }
+            
+            return null;
+        }
     }
 }
