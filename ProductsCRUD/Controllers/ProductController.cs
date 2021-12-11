@@ -84,7 +84,7 @@ namespace ProductsCRUD.Controllers
             if (dbProductDomainModel != null)
                 return Ok(_mapper.Map<ProductReadDTO>(dbProductDomainModel));
 
-            return NotFound();
+            throw new ResourceNotFoundException("A resource for ID: " + ID + " does not exist.");
         }
 
         /// <summary>
