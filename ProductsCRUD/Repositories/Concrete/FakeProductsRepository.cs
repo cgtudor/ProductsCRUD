@@ -56,5 +56,11 @@ namespace ProductsCRUD.Repositories.Concrete
             _products.Remove(productDomainModel);
             return Task.FromResult(productDomainModel);
         }
+
+        public void AddStock(int ID, int quantityToAdd)
+        {
+            var productModel = _products.FirstOrDefault(o => o.ProductID == ID);
+            productModel.ProductQuantity += quantityToAdd;
+        }
     }
 }

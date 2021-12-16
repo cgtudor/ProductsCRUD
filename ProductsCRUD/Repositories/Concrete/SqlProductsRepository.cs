@@ -54,5 +54,12 @@ namespace ProductsCRUD.Repositories.Concrete
             
             return null;
         }
+
+        public void AddStock(int ID, int quantityToAdd)
+        {
+            var product = _context._products
+                        .FirstOrDefault(o => o.ProductID == ID);
+            product.ProductQuantity += quantityToAdd;
+        }
     }
 }

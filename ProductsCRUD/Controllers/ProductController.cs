@@ -181,6 +181,36 @@ namespace ProductsCRUD.Controllers
             }
         }
 
+        /// <summary>
+        /// This function is used to add stock to a product
+        /// /api/products/{id}/stock
+        /// </summary>
+        /// <param name="addStockDTO">The properties supplied add stock to the product.</param>
+        /// <returns></returns>
+        [HttpPost("{ID}/stock")]
+        [Authorize("UpdateProduct")]
+        public async Task<ActionResult> AddStock(int ID, [FromBody] ProductAddStockDTO addStockDTO)
+        {
+
+            var dbProductDomainModel = await _productsRepository.GetProductAsync(ID);
+
+            if (dbProductDomainModel == null)
+                throw new ResourceNotFoundException("A resource for ID: " + ID + " does not exist.");
+
+            _productsRepository.AddStock(ID, addStockDTO.ProductQuantityToAdd);
+
+            await _productsRepository.SaveChangesAsync();
+
+            if (_memoryCache.TryGetValue(_memoryCacheModel.Products, out List<ProductDomainModel> productValues))
+            {
+                //If the entity is cached we add the quantity to it
+                var productDomainModel = productValues.Find(o => o.ProductID == ID);
+                if (productDomainModel != null)
+                    productDomainModel.ProductQuantity += addStockDTO.ProductQuantityToAdd;
+            }
+
+            return Ok();
+        }
 
     }
 }
