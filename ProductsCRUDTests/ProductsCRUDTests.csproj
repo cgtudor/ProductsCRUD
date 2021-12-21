@@ -20,10 +20,20 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="MockQueryable.Moq" Version="5.0.1" />
+    <PackageReference Include="MockQueryable.Core" Version="5.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ProductsCRUD\ProductsCRUD.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Helpers\" />
+    <None Remove="MockQueryable.Moq" />
+    <None Remove="MockQueryable.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Helpers\" />
+  </ItemGroup>
 </Project>

@@ -1,7 +1,9 @@
 using AutoMapper;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -13,21 +15,23 @@ using ProductsCRUD.DomainModels;
 using ProductsCRUD.DTOs;
 using ProductsCRUD.Profiles;
 using ProductsCRUD.Repositories.Interface;
+using ProductsCRUDTests.Helpers;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace ProductsCRUDTests
-{
+{ 
     public class ProductControllerTest
     {
         private readonly IMapper _mapper;
         private readonly Mock<IMemoryCache> _memoryCacheMock;
         private readonly IOptions<MemoryCacheModel> _memoryCacheModel;
 
-        private ProductDomainModel[] GetTestProducts() => new ProductDomainModel[] 
+        private ProductDomainModel[] GetTestProducts() => new ProductDomainModel[]
         {
             new ProductDomainModel {ProductID = 0, ProductName = "TestProduct", ProductDescription = "Tasty and savory.", ProductPrice = 1.56, ProductQuantity = 4},
             new ProductDomainModel {ProductID = 1, ProductName = "Heineken 0.5L", ProductDescription = "Blonde beer. Yummy.", ProductPrice = 2.56, ProductQuantity = 45},
@@ -51,14 +55,14 @@ namespace ProductsCRUDTests
             var options = Options.Create(new MemoryCacheModel());
             _memoryCacheModel = options;
             _mapper = config.CreateMapper();
-            
+
         }
 
         [Fact]
         public async Task GetAll_WhenCalled_ReturnsAllItems()
         {
             // Arrange
-            
+
             var expected = GetTestProducts();
             var mockProducts = new Mock<IProductsRepository>(MockBehavior.Strict);
             mockProducts.Setup(r => r.GetAllProductsAsync())
@@ -430,6 +434,298 @@ namespace ProductsCRUDTests
             var controller = new ProductController(mockProducts.Object, _mapper, _memoryCacheMock.Object, _memoryCacheModel);
 
             await Assert.ThrowsAsync<Exception>(async () => await controller.CreateProduct(createDTO));
+        }
+
+        [Fact]
+        public async Task Update_WhenCalled_UpdatesItem()
+        {
+            // Arrange
+
+            var updateDto = new ProductEditDTO { ProductName = "Updated Bread", ProductDescription = "Updated Fresh.", ProductPrice = 99.56, ProductQuantity = 9999 };
+            JsonPatchDocument<ProductEditDTO> jsonPatchDocument = new JsonPatchDocument<ProductEditDTO>();
+            jsonPatchDocument.Replace<int>(jp => jp.ProductQuantity, updateDto.ProductQuantity);
+            var originalModel = new ProductDomainModel { ProductID = 2, ProductName = "Bread", ProductDescription = "Fresh.", ProductPrice = 0.56, ProductQuantity = 1243 };
+            var mockProducts = new Mock<IProductsRepository>(MockBehavior.Strict);
+            mockProducts.Setup(r => r.UpdateProduct(It.IsAny<ProductDomainModel>()))
+                        .Verifiable();
+
+            mockProducts.Setup(r => r.SaveChangesAsync())
+                        .Returns(Task.CompletedTask)
+                        .Verifiable();
+
+            mockProducts.Setup(r => r.GetProductAsync(2))
+                        .ReturnsAsync(originalModel)
+                        .Verifiable();
+
+            var objectValidator = new Mock<IObjectModelValidator>();
+            objectValidator.Setup(o => o.Validate(It.IsAny<ActionContext>(),
+                                              It.IsAny<ValidationStateDictionary>(),
+                                              It.IsAny<string>(),
+                                              It.IsAny<Object>()));
+
+            var controller = new ProductController(mockProducts.Object, _mapper, _memoryCacheMock.Object, _memoryCacheModel);
+
+            controller.ObjectValidator = objectValidator.Object;
+
+            // Act
+            var result = await controller.UpdateProduct(2, jsonPatchDocument);
+
+            // Assert
+            var viewResult = Assert.IsType<OkResult>(result);
+            mockProducts.Verify(r => r.GetProductAsync(It.IsAny<int>()), Times.Once);
+            mockProducts.Verify(r => r.UpdateProduct(It.IsAny<ProductDomainModel>()), Times.Once);
+            mockProducts.Verify(r => r.SaveChangesAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task Update_WhenBadServiceCall_ShouldInternalError()
+        {
+            // Arrange
+
+            var updateDto = new ProductEditDTO { ProductName = "Updated Bread", ProductDescription = "Updated Fresh.", ProductPrice = 99.56, ProductQuantity = 9999 };
+            JsonPatchDocument<ProductEditDTO> jsonPatchDocument = new JsonPatchDocument<ProductEditDTO>();
+            jsonPatchDocument.Replace<int>(jp => jp.ProductQuantity, updateDto.ProductQuantity);
+            var originalModel = new ProductDomainModel { ProductID = 2, ProductName = "Bread", ProductDescription = "Fresh.", ProductPrice = 0.56, ProductQuantity = 1243 };
+            var mockProducts = new Mock<IProductsRepository>(MockBehavior.Strict);
+            mockProducts.Setup(r => r.UpdateProduct(It.IsAny<ProductDomainModel>()))
+                        .Throws(new Exception())
+                        .Verifiable();
+
+            mockProducts.Setup(r => r.GetProductAsync(2))
+                        .ReturnsAsync(originalModel)
+                        .Verifiable();
+
+            var objectValidator = new Mock<IObjectModelValidator>();
+            objectValidator.Setup(o => o.Validate(It.IsAny<ActionContext>(),
+                                              It.IsAny<ValidationStateDictionary>(),
+                                              It.IsAny<string>(),
+                                              It.IsAny<Object>()));
+
+            var controller = new ProductController(mockProducts.Object, _mapper, _memoryCacheMock.Object, _memoryCacheModel);
+
+            controller.ObjectValidator = objectValidator.Object;
+
+            // Act
+            await Assert.ThrowsAsync<Exception>(async () => await controller.UpdateProduct(2, jsonPatchDocument));
+
+            mockProducts.Verify(r => r.GetProductAsync(It.IsAny<int>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Update_WhenCalledWithWrongID_ThrowsNotFound()
+        {
+            // Arrange
+
+            var updateDto = new ProductEditDTO { ProductName = "Updated Bread", ProductDescription = "Updated Fresh.", ProductPrice = 99.56, ProductQuantity = 9999 };
+            JsonPatchDocument<ProductEditDTO> jsonPatchDocument = new JsonPatchDocument<ProductEditDTO>();
+            jsonPatchDocument.Replace<int>(jp => jp.ProductQuantity, updateDto.ProductQuantity);
+            var mockProducts = new Mock<IProductsRepository>(MockBehavior.Strict);
+
+            mockProducts.Setup(r => r.GetProductAsync(2))
+                        .ReturnsAsync((ProductDomainModel)null)
+                        .Verifiable();
+
+            var objectValidator = new Mock<IObjectModelValidator>();
+            objectValidator.Setup(o => o.Validate(It.IsAny<ActionContext>(),
+                                              It.IsAny<ValidationStateDictionary>(),
+                                              It.IsAny<string>(),
+                                              It.IsAny<Object>()));
+
+            var controller = new ProductController(mockProducts.Object, _mapper, _memoryCacheMock.Object, _memoryCacheModel);
+
+            controller.ObjectValidator = objectValidator.Object;
+
+            // Act
+            await Assert.ThrowsAsync<ResourceNotFoundException>(async () => await controller.UpdateProduct(2, jsonPatchDocument));
+
+            mockProducts.Verify(r => r.GetProductAsync(It.IsAny<int>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Update_WhenCalledWithModelStateError_ThrowsArgumentException()
+        {
+            // Arrange
+
+            var updateDto = new ProductEditDTO { ProductName = "Updated Bread", ProductDescription = "Updated Fresh.", ProductPrice = 99.56, ProductQuantity = 9999 };
+            JsonPatchDocument<ProductEditDTO> jsonPatchDocument = new JsonPatchDocument<ProductEditDTO>();
+            jsonPatchDocument.Replace<int>(jp => jp.ProductQuantity, updateDto.ProductQuantity);
+            var originalModel = new ProductDomainModel { ProductID = 2, ProductName = "Bread", ProductDescription = "Fresh.", ProductPrice = 0.56, ProductQuantity = 1243 };
+            var mockProducts = new Mock<IProductsRepository>(MockBehavior.Strict);
+
+            mockProducts.Setup(r => r.GetProductAsync(2))
+                        .ReturnsAsync(originalModel)
+                        .Verifiable();
+
+            var controller = new ProductController(mockProducts.Object, _mapper, _memoryCacheMock.Object, _memoryCacheModel);
+
+            controller.ObjectValidator = new FaultyValidator();
+
+            // Act
+            await Assert.ThrowsAsync<ArgumentException>(async () => await controller.UpdateProduct(2, jsonPatchDocument));
+
+            // Assert
+            mockProducts.Verify(r => r.GetProductAsync(It.IsAny<int>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Delete_WhenCalled_DeletesItem()
+        {
+            // Arrange
+            var originalModel = new ProductDomainModel { ProductID = 2, ProductName = "Bread", ProductDescription = "Fresh.", ProductPrice = 0.56, ProductQuantity = 1243 };
+            var mockProducts = new Mock<IProductsRepository>(MockBehavior.Strict);
+            mockProducts.Setup(r => r.DeleteProductAsync(It.IsAny<int>()))
+                        .ReturnsAsync(originalModel)
+                        .Verifiable();
+
+            mockProducts.Setup(r => r.SaveChangesAsync())
+                        .Returns(Task.CompletedTask)
+                        .Verifiable();
+
+            mockProducts.Setup(r => r.GetProductAsync(2))
+                        .ReturnsAsync(originalModel)
+                        .Verifiable();
+
+
+            var controller = new ProductController(mockProducts.Object, _mapper, _memoryCacheMock.Object, _memoryCacheModel);
+
+            // Act
+            var result = await controller.DeleteProduct(2);
+
+            // Assert
+            var viewResult = Assert.IsType<NoContentResult>(result.Result);
+
+            mockProducts.Verify(r => r.GetProductAsync(It.IsAny<int>()), Times.Once);
+            mockProducts.Verify(r => r.DeleteProductAsync(It.IsAny<int>()), Times.Once);
+            mockProducts.Verify(r => r.SaveChangesAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task Delete_WhenBadServiceCall_ShouldInternalError()
+        {
+            // Arrange
+            var originalModel = new ProductDomainModel { ProductID = 2, ProductName = "Bread", ProductDescription = "Fresh.", ProductPrice = 0.56, ProductQuantity = 1243 };
+            var mockProducts = new Mock<IProductsRepository>(MockBehavior.Strict);
+            mockProducts.Setup(r => r.DeleteProductAsync(It.IsAny<int>()))
+                        .Throws(new Exception())
+                        .Verifiable();
+
+            mockProducts.Setup(r => r.SaveChangesAsync())
+                        .Returns(Task.CompletedTask)
+                        .Verifiable();
+
+            mockProducts.Setup(r => r.GetProductAsync(2))
+                        .ReturnsAsync(originalModel)
+                        .Verifiable();
+
+            var controller = new ProductController(mockProducts.Object, _mapper, _memoryCacheMock.Object, _memoryCacheModel);
+
+            // Act
+            await Assert.ThrowsAsync<Exception>(async () => await controller.DeleteProduct(2));
+
+            mockProducts.Verify(r => r.GetProductAsync(It.IsAny<int>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Delete_WhenCalledWithWrongID_ThrowsNotFound()
+        {
+            // Arrange
+            var originalModel = new ProductDomainModel { ProductID = 2, ProductName = "Bread", ProductDescription = "Fresh.", ProductPrice = 0.56, ProductQuantity = 1243 };
+            var mockProducts = new Mock<IProductsRepository>(MockBehavior.Strict);
+            mockProducts.Setup(r => r.DeleteProductAsync(It.IsAny<int>()))
+                        .ReturnsAsync(originalModel)
+                        .Verifiable();
+
+            mockProducts.Setup(r => r.SaveChangesAsync())
+                        .Returns(Task.CompletedTask)
+                        .Verifiable();
+
+            mockProducts.Setup(r => r.GetProductAsync(2))
+                        .ReturnsAsync((ProductDomainModel)null)
+                        .Verifiable();
+
+            var controller = new ProductController(mockProducts.Object, _mapper, _memoryCacheMock.Object, _memoryCacheModel);
+
+            // Act
+            await Assert.ThrowsAsync<ResourceNotFoundException>(async () => await controller.DeleteProduct(2));
+
+            mockProducts.Verify(r => r.GetProductAsync(It.IsAny<int>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddStock_WhenCalled_AddsStock()
+        {
+            // Arrange
+
+            var updateDto = new ProductAddStockDTO { ProductQuantityToAdd = 45 };
+            var originalModel = new ProductDomainModel { ProductID = 2, ProductName = "Bread", ProductDescription = "Fresh.", ProductPrice = 0.56, ProductQuantity = 1243 };
+            var mockProducts = new Mock<IProductsRepository>(MockBehavior.Strict);
+            mockProducts.Setup(r => r.AddStock(It.IsAny<int>(), It.IsAny<int>()))
+                        .Verifiable();
+
+            mockProducts.Setup(r => r.SaveChangesAsync())
+                        .Returns(Task.CompletedTask)
+                        .Verifiable();
+
+            mockProducts.Setup(r => r.GetProductAsync(2))
+                        .ReturnsAsync(originalModel)
+                        .Verifiable();
+
+            var controller = new ProductController(mockProducts.Object, _mapper, _memoryCacheMock.Object, _memoryCacheModel);
+
+            // Act
+            var result = await controller.AddStock(2, updateDto);
+
+            // Assert
+            var viewResult = Assert.IsType<OkResult>(result);
+
+            mockProducts.Verify(r => r.GetProductAsync(It.IsAny<int>()), Times.Once);
+            mockProducts.Verify(r => r.AddStock(It.IsAny<int>(), It.IsAny<int>()), Times.Once);
+            mockProducts.Verify(r => r.SaveChangesAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddStock_WhenBadServiceCall_ShouldInternalError()
+        {
+            // Arrange
+
+            var updateDto = new ProductAddStockDTO { ProductQuantityToAdd = 45 };
+            var originalModel = new ProductDomainModel { ProductID = 2, ProductName = "Bread", ProductDescription = "Fresh.", ProductPrice = 0.56, ProductQuantity = 1243 };
+            var mockProducts = new Mock<IProductsRepository>(MockBehavior.Strict);
+            mockProducts.Setup(r => r.AddStock(It.IsAny<int>(), It.IsAny<int>()))
+                        .Throws(new Exception())
+                        .Verifiable();
+
+            mockProducts.Setup(r => r.GetProductAsync(2))
+                        .ReturnsAsync(originalModel)
+                        .Verifiable();
+
+            var controller = new ProductController(mockProducts.Object, _mapper, _memoryCacheMock.Object, _memoryCacheModel);
+
+            // Act
+            await Assert.ThrowsAsync<Exception>(async () => await controller.AddStock(2, updateDto));
+
+            mockProducts.Verify(r => r.GetProductAsync(It.IsAny<int>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddStock_WhenCalledWithWrongID_ThrowsNotFound()
+        {
+            // Arrange
+
+            var updateDto = new ProductAddStockDTO { ProductQuantityToAdd = 45 };
+            var originalModel = new ProductDomainModel { ProductID = 2, ProductName = "Bread", ProductDescription = "Fresh.", ProductPrice = 0.56, ProductQuantity = 1243 };
+            var mockProducts = new Mock<IProductsRepository>(MockBehavior.Strict);
+
+            mockProducts.Setup(r => r.GetProductAsync(2))
+                        .ReturnsAsync((ProductDomainModel) null)
+                        .Verifiable();
+
+            var controller = new ProductController(mockProducts.Object, _mapper, _memoryCacheMock.Object, _memoryCacheModel);
+
+            // Act
+            await Assert.ThrowsAsync<ResourceNotFoundException>(async () => await controller.AddStock(2, updateDto));
+
+            mockProducts.Verify(r => r.GetProductAsync(It.IsAny<int>()), Times.Once);
         }
     }
 }

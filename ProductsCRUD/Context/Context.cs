@@ -9,12 +9,14 @@ namespace ProductsCRUD.Context
 {
     public class Context : DbContext
     {
-        public DbSet<ProductDomainModel> _products { get; set; }
+        virtual public DbSet<ProductDomainModel> _products { get; set; }
 
         public Context(DbContextOptions<Context> options) : base(options)
         {
 
         }
+
+        public Context() { }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

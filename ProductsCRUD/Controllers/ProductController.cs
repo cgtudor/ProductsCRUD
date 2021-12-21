@@ -91,13 +91,13 @@ namespace ProductsCRUD.Controllers
         /// This function is used to create a product.
         /// /api/products
         /// </summary>
-        /// <param name="orderCreateDTO">The properties supplied to create a product from the POSTing API.</param>
+        /// <param name="productCreateDTO">The properties supplied to create a product from the POSTing API.</param>
         /// <returns></returns>
         [HttpPost]
         [Authorize("CreateProduct")]
-        public async Task<ActionResult> CreateProduct([FromBody] ProductCreateDTO orderCreateDTO)
+        public async Task<ActionResult> CreateProduct([FromBody] ProductCreateDTO productCreateDTO)
         {
-            var productModel = _mapper.Map<ProductDomainModel>(orderCreateDTO);
+            var productModel = _mapper.Map<ProductDomainModel>(productCreateDTO);
 
             int newProductID = _productsRepository.CreateProduct(productModel);
 
@@ -122,20 +122,20 @@ namespace ProductsCRUD.Controllers
         {
             var productModel = await _productsRepository.GetProductAsync(ID);
             if (productModel == null)
-                return NotFound();
+                throw new ResourceNotFoundException();
 
             var newProduct = _mapper.Map<ProductEditDTO>(productModel);
             productEditPatch.ApplyTo(newProduct, ModelState);
 
             if (!TryValidateModel(newProduct))
-                return ValidationProblem(ModelState);
+                throw new ArgumentException();
 
             _mapper.Map(newProduct, productModel);
 
             _productsRepository.UpdateProduct(productModel);
             await _productsRepository.SaveChangesAsync();
 
-            //Update cache with newly updated orders.
+            //Update cache with newly updated products.
             if (_memoryCache.TryGetValue(_memoryCacheModel.Products, out List<ProductDomainModel> productValues))
             {
                 productValues.RemoveAll(o => o.ProductID == productModel.ProductID);
@@ -153,32 +153,25 @@ namespace ProductsCRUD.Controllers
         /// <returns></returns>
         [HttpDelete("{ID}")]
         [Authorize("DeleteProduct")]
-        [ActionName(nameof(GetProduct))]
+        [ActionName(nameof(DeleteProduct))]
         public async Task<ActionResult<ProductReadDTO>> DeleteProduct(int ID)
         {
-            try
+            var productDomainModel = await _productsRepository.GetProductAsync(ID);
+
+            if (productDomainModel == null)
+                throw new ResourceNotFoundException();
+
+            await _productsRepository.DeleteProductAsync(ID);
+
+            await _productsRepository.SaveChangesAsync();
+
+            //Update cache with newly updated products.
+            if (_memoryCache.TryGetValue(_memoryCacheModel.Products, out List<ProductDomainModel> productValues))
             {
-                var productDomainModel = await _productsRepository.GetProductAsync(ID);
-
-                if (productDomainModel == null)
-                    return NotFound($"Product with ID = {ID} not found.");
-
-                await _productsRepository.DeleteProductAsync(ID);
-
-                await _productsRepository.SaveChangesAsync();
-
-                //Update cache with newly updated orders.
-                if (_memoryCache.TryGetValue(_memoryCacheModel.Products, out List<ProductDomainModel> productValues))
-                {
-                    productValues.RemoveAll(o => o.ProductID == productDomainModel.ProductID);
-                }
-
-                return NoContent();
-            } catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    e.Message);
+                productValues.RemoveAll(o => o.ProductID == productDomainModel.ProductID);
             }
+
+            return NoContent();
         }
 
         /// <summary>

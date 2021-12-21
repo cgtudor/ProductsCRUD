@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ProductsCRUD.Controllers;
 using ProductsCRUD.DomainModels;
 using ProductsCRUD.Repositories.Interface;
 using System;
@@ -39,7 +40,9 @@ namespace ProductsCRUD.Repositories.Concrete
 
         public void UpdateProduct(ProductDomainModel productDomainModel)
         {
-            
+            if (productDomainModel == null)
+                throw new ArgumentNullException(nameof(productDomainModel), "The product model to be updated cannot be null");
+            _context._products.Update(productDomainModel);
         }
 
         public async Task<ProductDomainModel> DeleteProductAsync(int ID)
@@ -55,10 +58,12 @@ namespace ProductsCRUD.Repositories.Concrete
             return null;
         }
 
-        public void AddStock(int ID, int quantityToAdd)
+        public async void AddStock(int ID, int quantityToAdd)
         {
-            var product = _context._products
-                        .FirstOrDefault(o => o.ProductID == ID);
+            var product = await _context._products
+                        .FirstOrDefaultAsync(o => o.ProductID == ID);
+            if (product == null)
+                throw new ResourceNotFoundException();
             product.ProductQuantity += quantityToAdd;
         }
     }
