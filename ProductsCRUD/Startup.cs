@@ -48,7 +48,7 @@ namespace ProductsCRUD
             {
                 services.AddDbContext<Context.Context>(options => options.UseSqlServer
                     ("local"));
-            } else
+            } else if (_environment.IsProduction() || _environment.IsStaging())
             {
                 services.AddDbContext<Context.Context>(options => options.UseSqlServer
                     (Configuration.GetConnectionString("ProductsConnectionString"),
@@ -151,10 +151,14 @@ namespace ProductsCRUD
                         c.OAuthUsePkce();
                     }
                 });
+            } else if(env.IsProduction() || env.IsStaging())
+            {
+                app.UseMiddleware<ExceptionMiddleware>();
+                memoryCacheAutomater.AutomateCache();
+                dataContext.Database.Migrate();
             } else
             {
                 app.UseMiddleware<ExceptionMiddleware>();
-                dataContext.Database.Migrate();
             }
 
             app.UseHttpsRedirection();
@@ -169,8 +173,6 @@ namespace ProductsCRUD
             {
                 endpoints.MapControllers();
             });
-
-            memoryCacheAutomater.AutomateCache();
         }
     }
 }
