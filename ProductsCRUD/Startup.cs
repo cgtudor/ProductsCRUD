@@ -161,9 +161,9 @@ namespace ProductsCRUD
                 });
             } else if(env.IsProduction() || env.IsStaging())
             {
+                dataContext.Database.Migrate();
                 app.UseMiddleware<ExceptionMiddleware>();
                 memoryCacheAutomater.AutomateCache();
-                dataContext.Database.Migrate();
             } else
             {
                 dataContext.Database.Migrate();
