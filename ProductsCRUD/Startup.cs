@@ -118,6 +118,10 @@ namespace ProductsCRUD
                     policy.RequireClaim("permissions", "read:product"));
                 o.AddPolicy("GetProducts", policy =>
                     policy.RequireClaim("permissions", "read:products"));
+                o.AddPolicy("GetProductPrices", policy =>
+                    policy.RequireClaim("permissions", "read:product_prices"));
+                o.AddPolicy("GetProductPriceHistory", policy =>
+                    policy.RequireClaim("permissions", "read:product_price_history"));
                 o.AddPolicy("CreateProduct", policy =>
                     policy.RequireClaim("permissions", "add:product"));
                 o.AddPolicy("UpdateProduct", policy =>

@@ -51,6 +51,19 @@ namespace ProductsCRUD.Controllers
         }
 
         /// <summary>
+        /// GET all products' price history.
+        /// /api/products/prices
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("prices")]
+        [Authorize("GetProductPrices")]
+        public async Task<ActionResult<IEnumerable<ProductPricesReadDTO>>> GetAllProductPrices()
+        {
+            var productPricesDomainModels = await _productsRepository.GetAllProductsPricesAsync();
+            return Ok(_mapper.Map<IEnumerable<ProductPricesReadDTO>>(productPricesDomainModels));
+        }
+
+        /// <summary>
         /// GET individual product.
         /// /api/products/{id}
         /// </summary>
@@ -87,6 +100,21 @@ namespace ProductsCRUD.Controllers
                 return Ok(_mapper.Map<ProductReadDTO>(dbProductDomainModel));
 
             throw new ResourceNotFoundException("A resource for ID: " + ID + " does not exist.");
+        }
+
+        /// <summary>
+        /// GET an individual product's price history
+        /// /api/products/{id}/prices
+        /// </summary>
+        /// <param name="ID">Represents the product ID and is used to get a specific product's history.</param>
+        /// <returns></returns>
+        [HttpGet("{ID}/prices")]
+        [Authorize("GetProductPriceHistory")]
+        [ActionName(nameof(GetProductPriceHistory))]
+        public async Task<ActionResult<IEnumerable<ProductPricesReadDTO>>> GetProductPriceHistory(int ID)
+        {
+            var productPricesDomainModels = await _productsRepository.GetProductPricesAsync(ID);
+            return Ok(_mapper.Map<IEnumerable<ProductPricesReadDTO>>(productPricesDomainModels));
         }
 
         /// <summary>

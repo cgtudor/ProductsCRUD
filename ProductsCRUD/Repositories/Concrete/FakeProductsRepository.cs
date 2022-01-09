@@ -17,11 +17,27 @@ namespace ProductsCRUD.Repositories.Concrete
             new ProductDomainModel {ProductID = 3, ProductName = "Nails", ProductDescription = "Pack of 50 nails.", ProductPrice = 4.5, ProductQuantity = 23},
             new ProductDomainModel {ProductID = 4, ProductName = "Candle", ProductDescription = "Aroma like you've never smelled before.", ProductPrice = 3.56, ProductQuantity = 43}
         };
+        public List<ProductPricesDomainModel> _productPrices = new List<ProductPricesDomainModel>
+        {
+            new ProductPricesDomainModel {ProductPriceID = 0, ProductID = 0, ProductPrice = 10, PriceChangeDate = new DateTime(2020, 1, 1)},
+            new ProductPricesDomainModel {ProductPriceID = 1, ProductID = 0, ProductPrice = 1.56, PriceChangeDate = new DateTime(2020, 1, 26)},
+            new ProductPricesDomainModel {ProductPriceID = 2, ProductID = 1, ProductPrice = 2.56, PriceChangeDate = new DateTime(2020, 1, 1)},
+            new ProductPricesDomainModel {ProductPriceID = 3, ProductID = 2, ProductPrice = 10, PriceChangeDate = new DateTime(2020, 1, 1)},
+            new ProductPricesDomainModel {ProductPriceID = 4, ProductID = 2, ProductPrice = 0.56, PriceChangeDate = new DateTime(2020, 1, 21)}
+        };
+
         public int CreateProduct(ProductDomainModel productDomainModel)
         {
             int newOrderID = (_products.Count);
             productDomainModel.ProductID = newOrderID;
             _products.Add(productDomainModel);
+            _productPrices.Add(new ProductPricesDomainModel
+            {
+                ProductPriceID = _productPrices.Count,
+                ProductID = productDomainModel.ProductID,
+                ProductPrice = productDomainModel.ProductPrice,
+                PriceChangeDate = DateTime.Now
+            });
 
             return newOrderID;
         }
@@ -46,6 +62,8 @@ namespace ProductsCRUD.Repositories.Concrete
             var oldProductDomainModel = _products.FirstOrDefault(o => o.ProductID == productDomainModel.ProductID);
             _products.Remove(oldProductDomainModel);
             _products.Add(productDomainModel);
+            _productPrices.Add(new ProductPricesDomainModel { ProductPriceID = _productPrices.Count, ProductID = oldProductDomainModel.ProductID,
+                ProductPrice = productDomainModel.ProductPrice, PriceChangeDate = DateTime.Now });
         }
 
         public Task<ProductDomainModel> DeleteProductAsync(int ID)
@@ -61,6 +79,16 @@ namespace ProductsCRUD.Repositories.Concrete
         {
             var productModel = _products.FirstOrDefault(o => o.ProductID == ID);
             productModel.ProductQuantity += quantityToAdd;
+        }
+
+        public Task<IEnumerable<ProductPricesDomainModel>> GetAllProductsPricesAsync()
+        {
+            return Task.FromResult(_productPrices.AsEnumerable());
+        }
+
+        public Task<IEnumerable<ProductPricesDomainModel>> GetProductPricesAsync(int ID)
+        {
+            return Task.FromResult(_productPrices.Where(o => o.ProductID == ID).AsEnumerable());
         }
     }
 }

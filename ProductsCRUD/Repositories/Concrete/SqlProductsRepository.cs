@@ -20,7 +20,14 @@ namespace ProductsCRUD.Repositories.Concrete
 
         public int CreateProduct(ProductDomainModel productDomainModel)
         {
-            return _context._products.Add(productDomainModel).Entity.ProductID;
+            var newProduct = _context._products.Add(productDomainModel).Entity;
+            _context._productPrices.Add(new ProductPricesDomainModel
+            {
+                ProductID = newProduct.ProductID,
+                ProductPrice = newProduct.ProductPrice,
+                PriceChangeDate = DateTime.Now
+            });
+            return newProduct.ProductID;
         }
 
         public async Task<IEnumerable<ProductDomainModel>> GetAllProductsAsync()
@@ -43,6 +50,12 @@ namespace ProductsCRUD.Repositories.Concrete
             if (productDomainModel == null)
                 throw new ArgumentNullException(nameof(productDomainModel), "The product model to be updated cannot be null");
             _context._products.Update(productDomainModel);
+            _context._productPrices.Add(new ProductPricesDomainModel
+            {
+                ProductID = productDomainModel.ProductID,
+                ProductPrice = productDomainModel.ProductPrice,
+                PriceChangeDate = DateTime.Now
+            });
         }
 
         public async Task<ProductDomainModel> DeleteProductAsync(int ID)
@@ -65,6 +78,16 @@ namespace ProductsCRUD.Repositories.Concrete
             if (product == null)
                 throw new ResourceNotFoundException();
             product.ProductQuantity += quantityToAdd;
+        }
+
+        public async Task<IEnumerable<ProductPricesDomainModel>> GetAllProductsPricesAsync()
+        {
+            return await _context._productPrices.ToListAsync();
+        }
+
+        public async Task<IEnumerable<ProductPricesDomainModel>> GetProductPricesAsync(int ID)
+        {
+            return await _context._productPrices.Where(p => p.ProductID == ID).ToListAsync();
         }
     }
 }

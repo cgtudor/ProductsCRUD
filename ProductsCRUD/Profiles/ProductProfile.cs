@@ -13,6 +13,7 @@ namespace ProductsCRUD.Profiles
         public ProductProfile()
         {
             CreateMap<ProductDomainModel, ProductReadDTO>();
+            CreateMap<ProductPricesDomainModel, ProductPricesReadDTO>();
             CreateMap<ProductCreateDTO, ProductDomainModel>();
             CreateMap<ProductDomainModel, ProductEditDTO>();
             CreateMap<ProductEditDTO, ProductDomainModel>();

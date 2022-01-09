@@ -10,6 +10,7 @@ namespace ProductsCRUD.Context
     public class Context : DbContext
     {
         virtual public DbSet<ProductDomainModel> _products { get; set; }
+        virtual public DbSet<ProductPricesDomainModel> _productPrices { get; set; }
 
         public Context(DbContextOptions<Context> options) : base(options)
         {
@@ -29,6 +30,14 @@ namespace ProductsCRUD.Context
                 new ProductDomainModel { ProductID = 3, ProductName = "Chocolate Cover", ProductDescription = "Purchase your favourite chocolate and use the provided heating element t melt it into the perfect cover for your phone.", ProductPrice = 11.82, ProductQuantity = 1243 },
                 new ProductDomainModel { ProductID = 4, ProductName = "Water Bath Case", ProductDescription = "Place your device within the water-tight container, fill with water and enjoy the cushioned protection from bumps and bangs.", ProductPrice = 16.83, ProductQuantity = 23 },
                 new ProductDomainModel { ProductID = 5, ProductName = "Smartphone Car Holder", ProductDescription = "Keep your smartphone handsfree with this large assembly that attaches to your rear window wiper.", ProductPrice = 97.02, ProductQuantity = 43 });
+
+            builder.Entity<ProductPricesDomainModel>()
+                .HasData(
+                new ProductPricesDomainModel { ProductPriceID = 1, ProductID = 1, ProductPrice = 10, PriceChangeDate = new DateTime(2020, 1, 1) },
+                new ProductPricesDomainModel { ProductPriceID = 2, ProductID = 1, ProductPrice = 8.29, PriceChangeDate = new DateTime(2020, 1, 26) },
+                new ProductPricesDomainModel { ProductPriceID = 3, ProductID = 3, ProductPrice = 11.82, PriceChangeDate = new DateTime(2020, 1, 1) },
+                new ProductPricesDomainModel { ProductPriceID = 4, ProductID = 2, ProductPrice = 10, PriceChangeDate = new DateTime(2020, 1, 1) },
+                new ProductPricesDomainModel { ProductPriceID = 5, ProductID = 2, ProductPrice = 5.78, PriceChangeDate = new DateTime(2020, 1, 21) });
         }
     }
 }
