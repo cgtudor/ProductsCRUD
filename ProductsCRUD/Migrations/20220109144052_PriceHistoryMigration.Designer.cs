@@ -9,7 +9,7 @@ using ProductsCRUD.Context;
 
 namespace ProductsCRUD.Migrations
 {
-    [DbContext(typeof(Context))]
+    [DbContext(typeof(Context.Context))]
     [Migration("20220109144052_PriceHistoryMigration")]
     partial class PriceHistoryMigration
     {
