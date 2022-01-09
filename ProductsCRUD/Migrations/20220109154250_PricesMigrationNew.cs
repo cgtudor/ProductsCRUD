@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ProductsCRUD.Migrations
 {
-    public partial class PricesMigration : Migration
+    public partial class PricesMigrationNew : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
