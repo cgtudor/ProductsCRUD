@@ -112,35 +112,35 @@ namespace ProductsCRUD.Migrations
                         {
                             ProductPriceID = 1,
                             PriceChangeDate = new DateTime(2020, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ProductID = 1,
+                            ProductID = 6,
                             ProductPrice = 10.0
                         },
                         new
                         {
                             ProductPriceID = 2,
                             PriceChangeDate = new DateTime(2020, 1, 26, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ProductID = 1,
+                            ProductID = 7,
                             ProductPrice = 8.2899999999999991
                         },
                         new
                         {
                             ProductPriceID = 3,
                             PriceChangeDate = new DateTime(2020, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ProductID = 3,
+                            ProductID = 8,
                             ProductPrice = 11.82
                         },
                         new
                         {
                             ProductPriceID = 4,
                             PriceChangeDate = new DateTime(2020, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ProductID = 2,
+                            ProductID = 9,
                             ProductPrice = 10.0
                         },
                         new
                         {
                             ProductPriceID = 5,
                             PriceChangeDate = new DateTime(2020, 1, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ProductID = 2,
+                            ProductID = 10,
                             ProductPrice = 5.7800000000000002
                         });
                 });

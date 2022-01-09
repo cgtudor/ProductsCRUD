@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ProductsCRUD.Migrations
 {
-    public partial class PricesMigrationNew : Migration
+    public partial class PricesMigrationNewNew : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -43,11 +43,11 @@ namespace ProductsCRUD.Migrations
                 columns: new[] { "ProductPriceID", "PriceChangeDate", "ProductID", "ProductPrice" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2020, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, 10.0 },
-                    { 2, new DateTime(2020, 1, 26, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, 8.2899999999999991 },
-                    { 3, new DateTime(2020, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 3, 11.82 },
-                    { 4, new DateTime(2020, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 2, 10.0 },
-                    { 5, new DateTime(2020, 1, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), 2, 5.7800000000000002 }
+                    { 1, new DateTime(2020, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 6, 10.0 },
+                    { 2, new DateTime(2020, 1, 26, 0, 0, 0, 0, DateTimeKind.Unspecified), 7, 8.2899999999999991 },
+                    { 3, new DateTime(2020, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 8, 11.82 },
+                    { 4, new DateTime(2020, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 9, 10.0 },
+                    { 5, new DateTime(2020, 1, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), 10, 5.7800000000000002 }
                 });
 
             migrationBuilder.InsertData(

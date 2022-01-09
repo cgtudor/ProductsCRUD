@@ -33,11 +33,11 @@ namespace ProductsCRUD.Context
 
             builder.Entity<ProductPricesDomainModel>()
                 .HasData(
-                new ProductPricesDomainModel { ProductPriceID = 1, ProductID = 1, ProductPrice = 10, PriceChangeDate = new DateTime(2020, 1, 1) },
-                new ProductPricesDomainModel { ProductPriceID = 2, ProductID = 1, ProductPrice = 8.29, PriceChangeDate = new DateTime(2020, 1, 26) },
-                new ProductPricesDomainModel { ProductPriceID = 3, ProductID = 3, ProductPrice = 11.82, PriceChangeDate = new DateTime(2020, 1, 1) },
-                new ProductPricesDomainModel { ProductPriceID = 4, ProductID = 2, ProductPrice = 10, PriceChangeDate = new DateTime(2020, 1, 1) },
-                new ProductPricesDomainModel { ProductPriceID = 5, ProductID = 2, ProductPrice = 5.78, PriceChangeDate = new DateTime(2020, 1, 21) });
+                new ProductPricesDomainModel { ProductPriceID = 1, ProductID = 6, ProductPrice = 10, PriceChangeDate = new DateTime(2020, 1, 1) },
+                new ProductPricesDomainModel { ProductPriceID = 2, ProductID = 7, ProductPrice = 8.29, PriceChangeDate = new DateTime(2020, 1, 26) },
+                new ProductPricesDomainModel { ProductPriceID = 3, ProductID = 8, ProductPrice = 11.82, PriceChangeDate = new DateTime(2020, 1, 1) },
+                new ProductPricesDomainModel { ProductPriceID = 4, ProductID = 9, ProductPrice = 10, PriceChangeDate = new DateTime(2020, 1, 1) },
+                new ProductPricesDomainModel { ProductPriceID = 5, ProductID = 10, ProductPrice = 5.78, PriceChangeDate = new DateTime(2020, 1, 21) });
         }
     }
 }
