@@ -24,11 +24,11 @@ namespace ProductsCRUD.Context
 
             builder.Entity<ProductDomainModel>()
                 .HasData(
-                new ProductDomainModel { ProductID = 1, ProductName = "Chocolate", ProductDescription = "Tasty and savory.", ProductPrice = 1.56, ProductQuantity = 4 },
-                new ProductDomainModel { ProductID = 2, ProductName = "Heineken 0.5L", ProductDescription = "Blonde beer. Yummy.", ProductPrice = 2.56, ProductQuantity = 45 },
-                new ProductDomainModel { ProductID = 3, ProductName = "Bread", ProductDescription = "Fresh.", ProductPrice = 0.56, ProductQuantity = 1243 },
-                new ProductDomainModel { ProductID = 4, ProductName = "Nails", ProductDescription = "Pack of 50 nails.", ProductPrice = 4.5, ProductQuantity = 23 },
-                new ProductDomainModel { ProductID = 5, ProductName = "Candle", ProductDescription = "Aroma like you've never smelled before.", ProductPrice = 3.56, ProductQuantity = 43 });
+                new ProductDomainModel { ProductID = 1, ProductName = "Rippled Screen Protector", ProductDescription = "For his or her sensory pleasure. Fits few known smartphones.", ProductPrice = 8.29, ProductQuantity = 4 },
+                new ProductDomainModel { ProductID = 2, ProductName = "Wrap it and Hope Cover", ProductDescription = "Poor quality fake faux leather cover, loose enough to fit any mobile device.", ProductPrice = 5.78, ProductQuantity = 45 },
+                new ProductDomainModel { ProductID = 3, ProductName = "Chocolate Cover", ProductDescription = "Purchase your favourite chocolate and use the provided heating element t melt it into the perfect cover for your phone.", ProductPrice = 11.82, ProductQuantity = 1243 },
+                new ProductDomainModel { ProductID = 4, ProductName = "Water Bath Case", ProductDescription = "Place your device within the water-tight container, fill with water and enjoy the cushioned protection from bumps and bangs.", ProductPrice = 16.83, ProductQuantity = 23 },
+                new ProductDomainModel { ProductID = 5, ProductName = "Smartphone Car Holder", ProductDescription = "Keep your smartphone handsfree with this large assembly that attaches to your rear window wiper.", ProductPrice = 97.02, ProductQuantity = 43 });
         }
     }
 }

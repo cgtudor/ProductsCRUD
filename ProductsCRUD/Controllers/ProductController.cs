@@ -40,6 +40,7 @@ namespace ProductsCRUD.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
+        [Authorize("GetProducts")]
         public async Task<ActionResult<IEnumerable<ProductReadDTO>>> GetAllProducts()
         {
             if (_memoryCache.TryGetValue(_memoryCacheModel.Products, out List<ProductDomainModel> productValues))
@@ -56,6 +57,7 @@ namespace ProductsCRUD.Controllers
         /// <param name="ID">Represents the product ID and is used to get a specific product.</param>
         /// <returns></returns>
         [HttpGet("{ID}")]
+        [Authorize("GetProduct")]
         [ActionName(nameof(GetProduct))]
         public async Task<ActionResult<ProductReadDTO>> GetProduct(int ID)
         {

@@ -114,6 +114,10 @@ namespace ProductsCRUD
 
             services.AddAuthorization(o =>
             {
+                o.AddPolicy("GetProduct", policy =>
+                    policy.RequireClaim("permissions", "read:product"));
+                o.AddPolicy("GetProducts", policy =>
+                    policy.RequireClaim("permissions", "read:products"));
                 o.AddPolicy("CreateProduct", policy =>
                     policy.RequireClaim("permissions", "add:product"));
                 o.AddPolicy("UpdateProduct", policy =>
