@@ -3,35 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ProductsCRUD.Migrations
 {
-    public partial class PriceHistoryMigration : Migration
+    public partial class PricesMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DeleteData(
-                table: "_products",
-                keyColumn: "ProductID",
-                keyValue: -5);
-
-            migrationBuilder.DeleteData(
-                table: "_products",
-                keyColumn: "ProductID",
-                keyValue: -4);
-
-            migrationBuilder.DeleteData(
-                table: "_products",
-                keyColumn: "ProductID",
-                keyValue: -3);
-
-            migrationBuilder.DeleteData(
-                table: "_products",
-                keyColumn: "ProductID",
-                keyValue: -2);
-
-            migrationBuilder.DeleteData(
-                table: "_products",
-                keyColumn: "ProductID",
-                keyValue: -1);
-
             migrationBuilder.CreateTable(
                 name: "_productPrices",
                 columns: table => new
@@ -45,6 +20,22 @@ namespace ProductsCRUD.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK__productPrices", x => x.ProductPriceID);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "_products",
+                columns: table => new
+                {
+                    ProductID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ProductQuantity = table.Column<int>(type: "int", nullable: false),
+                    ProductPrice = table.Column<double>(type: "float", nullable: false),
+                    ProductName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ProductDescription = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK__products", x => x.ProductID);
                 });
 
             migrationBuilder.InsertData(
@@ -77,42 +68,8 @@ namespace ProductsCRUD.Migrations
             migrationBuilder.DropTable(
                 name: "_productPrices");
 
-            migrationBuilder.DeleteData(
-                table: "_products",
-                keyColumn: "ProductID",
-                keyValue: 1);
-
-            migrationBuilder.DeleteData(
-                table: "_products",
-                keyColumn: "ProductID",
-                keyValue: 2);
-
-            migrationBuilder.DeleteData(
-                table: "_products",
-                keyColumn: "ProductID",
-                keyValue: 3);
-
-            migrationBuilder.DeleteData(
-                table: "_products",
-                keyColumn: "ProductID",
-                keyValue: 4);
-
-            migrationBuilder.DeleteData(
-                table: "_products",
-                keyColumn: "ProductID",
-                keyValue: 5);
-
-            migrationBuilder.InsertData(
-                table: "_products",
-                columns: new[] { "ProductID", "ProductDescription", "ProductName", "ProductPrice", "ProductQuantity" },
-                values: new object[,]
-                {
-                    { -1, "Tasty and savory.", "Chocolate", 1.5600000000000001, 4 },
-                    { -2, "Blonde beer. Yummy.", "Heineken 0.5L", 2.5600000000000001, 45 },
-                    { -3, "Fresh.", "Bread", 0.56000000000000005, 1243 },
-                    { -4, "Pack of 50 nails.", "Nails", 4.5, 23 },
-                    { -5, "Aroma like you've never smelled before.", "Candle", 3.5600000000000001, 43 }
-                });
+            migrationBuilder.DropTable(
+                name: "_products");
         }
     }
 }
