@@ -166,6 +166,7 @@ namespace ProductsCRUD
                 dataContext.Database.Migrate();
             } else
             {
+                dataContext.Database.Migrate();
                 app.UseMiddleware<ExceptionMiddleware>();
             }
 
