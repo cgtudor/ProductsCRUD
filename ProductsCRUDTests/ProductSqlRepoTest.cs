@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using Xunit;
 using ProductsCRUD.DomainModels;
 using ProductsCRUD.Repositories.Concrete;
+using ProductsCRUD.Controllers;
 
 namespace ProductsCRUDTests
 {
@@ -34,6 +35,15 @@ namespace ProductsCRUDTests
             new ProductDomainModel { ProductID = 4, ProductName = "Candle", ProductDescription = "Aroma like you've never smelled before.", ProductPrice = 3.56, ProductQuantity = 43 }
         };
 
+        private ProductPricesDomainModel[] GetTestPrices() => new ProductPricesDomainModel[]
+        {
+            new ProductPricesDomainModel { ProductPriceID = 1, ProductID = 1, ProductPrice = 10, PriceChangeDate = new DateTime(2020, 1, 1) },
+            new ProductPricesDomainModel { ProductPriceID = 2, ProductID = 1, ProductPrice = 2.56, PriceChangeDate = new DateTime(2020, 1, 26) },
+            new ProductPricesDomainModel { ProductPriceID = 3, ProductID = 2, ProductPrice = 11.82, PriceChangeDate = new DateTime(2020, 1, 1) },
+            new ProductPricesDomainModel { ProductPriceID = 4, ProductID = 2, ProductPrice = 0.56, PriceChangeDate = new DateTime(2020, 1, 1) },
+            new ProductPricesDomainModel { ProductPriceID = 5, ProductID = 3, ProductPrice = 5.4, PriceChangeDate = new DateTime(2020, 1, 21) }
+        };
+
         private Mock<Context> GetDbContext()
         {
             var context = new Mock<Context>();
@@ -46,6 +56,11 @@ namespace ProductsCRUDTests
         private Mock<DbSet<ProductDomainModel>> GetMockDbSet()
         {
             return GetTestProducts().AsQueryable().BuildMockDbSet();
+        }
+
+        private Mock<DbSet<ProductPricesDomainModel>> GetMockDbSetPrices()
+        {
+            return GetTestPrices().AsQueryable().BuildMockDbSet();
         }
 
         [Fact]
@@ -261,7 +276,9 @@ namespace ProductsCRUDTests
             //Arrange
             var dbContextMock = GetDbContext();
             var dbSetMock = GetMockDbSet();
+            var dbSetPricesMock = GetMockDbSetPrices();
             dbContextMock.SetupGet(c => c._products).Returns(dbSetMock.Object);
+            dbContextMock.SetupGet(c => c._productPrices).Returns(dbSetPricesMock.Object);
             var sqlProductsCRUDRepository = new SqlProductsRepository(dbContextMock.Object);
 
             //Act
@@ -298,26 +315,6 @@ namespace ProductsCRUDTests
 
             //Act
             sqlProductsCRUDRepository.AddStock(ID, stockToAdd);
-
-            //Assert
-            dbSetMock.Verify(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<ProductDomainModel, bool>>>(),
-                                                        It.IsAny<CancellationToken>()), Times.Once);
-        }
-
-        [Theory]
-        [InlineData(-2, 20)]
-        [InlineData(100, 30)]
-        [InlineData(int.MinValue, 40)]
-        public void AddStock_WhenNotFound_ThrowsNotFound(int ID, int stockToAdd)
-        {
-            //Arrange
-            var dbContextMock = GetDbContext();
-            var dbSetMock = GetMockDbSet();
-            dbContextMock.SetupGet(c => c._products).Returns(dbSetMock.Object);
-            var sqlProductsCRUDRepository = new SqlProductsRepository(dbContextMock.Object);
-
-            //Act
-            Assert.Throws<ArgumentNullException>(() => sqlProductsCRUDRepository.AddStock(ID, stockToAdd));
         }
 
         public static IEnumerable<object[]> SplitUpdateData =>
