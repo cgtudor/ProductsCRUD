@@ -172,6 +172,7 @@ namespace ProductsCRUD
             {
                 // For Staging, we use the custom exception middleware, we migrate the database in case of any new migrations and we activate the automated cacher.
                 // We also use the Swagger UI for ease of access, since staging is not customer facing.
+                app.UseSwagger();
                 app.UseSwaggerUI(c =>
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Glossary v1");
