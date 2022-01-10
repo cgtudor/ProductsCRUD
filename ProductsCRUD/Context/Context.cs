@@ -23,6 +23,7 @@ namespace ProductsCRUD.Context
         {
             base.OnModelCreating(builder);
 
+            // Seeds data into our SQL database.
             builder.Entity<ProductDomainModel>()
                 .HasData(
                 new ProductDomainModel { ProductID = 1, ProductName = "Rippled Screen Protector", ProductDescription = "For his or her sensory pleasure. Fits few known smartphones.", ProductPrice = 8.29, ProductQuantity = 4 },

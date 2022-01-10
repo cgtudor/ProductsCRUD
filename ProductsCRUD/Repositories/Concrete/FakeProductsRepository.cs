@@ -26,11 +26,18 @@ namespace ProductsCRUD.Repositories.Concrete
             new ProductPricesDomainModel {ProductPriceID = 4, ProductID = 2, ProductPrice = 0.56, PriceChangeDate = new DateTime(2020, 1, 21)}
         };
 
+        /// <summary>
+        /// Creates a product in the fake database, as well as adding an entry to the price history table.
+        /// </summary>
+        /// <param name="productDomainModel">Domain model of product to be created.</param>
+        /// <returns>ID of the newly created product.</returns>
         public int CreateProduct(ProductDomainModel productDomainModel)
         {
             int newOrderID = (_products.Count);
             productDomainModel.ProductID = newOrderID;
             _products.Add(productDomainModel);
+            
+            // Record the initial price of the product in the price history table.
             _productPrices.Add(new ProductPricesDomainModel
             {
                 ProductPriceID = _productPrices.Count,
@@ -42,21 +49,38 @@ namespace ProductsCRUD.Repositories.Concrete
             return newOrderID;
         }
 
+        /// <summary>
+        /// Get all the products in the fake database.
+        /// </summary>
+        /// <returns>A list of all the products.</returns>
         public Task<IEnumerable<ProductDomainModel>> GetAllProductsAsync()
         {
             return Task.FromResult(_products.AsEnumerable());
         }
 
+        /// <summary>
+        /// Get the product with the ID specified.
+        /// </summary>
+        /// <param name="ID">ID of the product to be retrieved.</param>
+        /// <returns>The product found.</returns>
         public Task<ProductDomainModel> GetProductAsync(int ID)
         {
             return Task.FromResult(_products.FirstOrDefault(o => o.ProductID == ID));
         }
 
+        /// <summary>
+        /// Commit changes to the database.
+        /// </summary>
+        /// <returns>Completed task result.</returns>
         public Task SaveChangesAsync()
         {
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Update a product in the fake database.
+        /// </summary>
+        /// <param name="productDomainModel">Domain model containing the new attributes.</param>
         public void UpdateProduct(ProductDomainModel productDomainModel)
         {
             var oldProductDomainModel = _products.FirstOrDefault(o => o.ProductID == productDomainModel.ProductID);
@@ -66,6 +90,11 @@ namespace ProductsCRUD.Repositories.Concrete
                 ProductPrice = productDomainModel.ProductPrice, PriceChangeDate = DateTime.Now });
         }
 
+        /// <summary>
+        /// Delete a product from the fake database.
+        /// </summary>
+        /// <param name="ID">ID of the product to be deleted.</param>
+        /// <returns>A task containing the deleted product's model.</returns>
         public Task<ProductDomainModel> DeleteProductAsync(int ID)
         {
             var productDomainModel = _products.FirstOrDefault(o => o.ProductID == ID);
@@ -75,17 +104,31 @@ namespace ProductsCRUD.Repositories.Concrete
             return Task.FromResult(productDomainModel);
         }
 
+        /// <summary>
+        /// Add stock to a product in the fake database.
+        /// </summary>
+        /// <param name="ID">ID of the product to add stock to.</param>
+        /// <param name="quantityToAdd">Amount of stock to add.</param>
         public void AddStock(int ID, int quantityToAdd)
         {
             var productModel = _products.FirstOrDefault(o => o.ProductID == ID);
             productModel.ProductQuantity += quantityToAdd;
         }
 
+        /// <summary>
+        /// Get all the product price histories.
+        /// </summary>
+        /// <returns>A list of all the price change timestamps.</returns>
         public Task<IEnumerable<ProductPricesDomainModel>> GetAllProductsPricesAsync()
         {
             return Task.FromResult(_productPrices.AsEnumerable());
         }
 
+        /// <summary>
+        /// Get a product's price history.
+        /// </summary>
+        /// <param name="ID">ID of the product to get the price history of.</param>
+        /// <returns>A list of all price change timestamps for the requested product.</returns>
         public Task<IEnumerable<ProductPricesDomainModel>> GetProductPricesAsync(int ID)
         {
             return Task.FromResult(_productPrices.Where(o => o.ProductID == ID).AsEnumerable());
