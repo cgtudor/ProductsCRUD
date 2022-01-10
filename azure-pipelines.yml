@@ -14,42 +14,31 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
-jobs:
-- job: Build
-  strategy:
-    matrix:
-      'Windows Server 2016':
-        image: 'vs2017-win2016'
-        dotnetcore: '2.2.x'
-      'Windows Server 2019':
-        image: 'windows-2019'
-        dotnetcore: '3.1.x'
-    maxParallel: 0
-  steps:
-  - task: NuGetToolInstaller@1
+steps:
+- task: NuGetToolInstaller@1
 
-  - task: NuGetCommand@2
-    inputs:
-      restoreSolution: '$(solution)'
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '$(solution)'
 
-  - task: VSBuild@1
-    inputs:
-      solution: '$(solution)'
-      msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
-      platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
+- task: VSBuild@1
+  inputs:
+    solution: '$(solution)'
+    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
 
-  - task: VSTest@2
-    inputs:
-      platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
+- task: VSTest@2
+  inputs:
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
 
-  - task: DotNetCoreCLI@2
-    displayName: 'Run unit tests - $(buildConfiguration)'
-    inputs:
-      command: 'test'
-      arguments: '--no-build --configuration $(buildConfiguration)'
-      publishTestResults: true
-      projects: '*/ProductCRUDTests/.csproj'   
-  
-  - task: PublishBuildArtifacts@1
+- task: DotNetCoreCLI@2
+  displayName: 'Run unit tests - $(buildConfiguration)'
+  inputs:
+    command: 'test'
+    arguments: '--no-build --configuration $(buildConfiguration)'
+    publishTestResults: true
+    projects: '*/ProductCRUDTests/.csproj'    
+    
+- task: PublishBuildArtifacts@1
