@@ -251,7 +251,7 @@ namespace ProductsCRUD.Controllers
         /// <param name="ID"> ID of the product to add stock to.</param>
         /// <returns></returns>
         /// <response code="200">Adding of stock to the product was successful</response>
-        /// <response code="400">Bad request.</response>
+        /// <response code="400">Bad request</response>
         /// <response code="401">Unauthorized access.</response>
         /// <response code="403">Lack of required permissions.</response>
         /// <response code="404">Product with the provided ID does not exist.</response>
